@@ -13,14 +13,15 @@
 if [ -d "run" ] && [ -d "setup" ] 
 then
 	echo "Existe ambos directorios"
-#mkdir 01_Mini 02_Anneal 03_EQ 04_SMD files toppar 
+
+	mkdir 01_Mini 02_Anneal 03_EQ 04_SMD files toppar 
 else 
 	echo "Error !!! run or/and setup folder doesnt exist"
 	exit 1
-
+fi 
 ## ajustar las condiciones de temperatura 
 ## Modificar solo anneling.conf 
-
+sleep 2 
 cd run
 
 sed "s/\(binVelocities\)/#\1/g" Annealing.conf > tmp.conf && rm Annealing.conf && mv tmp.conf Annealing.conf  
@@ -35,12 +36,11 @@ sed "s/#\(temperature\)/\1/g" Annealing.conf > tmp.conf && rm Annealing.conf && 
 ## conditions y luego match con conditions agregar set replica 
 for file in *.conf; do
 	## agregar la ruta de los archivos de topologia y de referencia 
-	sed 's/\s\(.*\.str\|.*\.prm\)/ \.\.\/toppar\/\1/g' $file > tmp.conf && rm $file && mv tmp.conf $file   
-    sed 's/\s\(.*\.pdb\|.*\.psf\)/ \.\.\/files\/\1/g' $file > tmp.conf && rm $file && mv tmp.conf $file
+	sed 's/\s\(.*\.str\|.*\.prm\)/ \.\.\/toppar\/\1/g' $file >& tmp.conf && rm $file && mv tmp.conf $file   
+    sed 's/\s\(.*\.pdb\|.*\.psf\)/ \.\.\/files\/\1/g' $file >& tmp.conf && rm $file && mv tmp.conf $file
     # cambiamos el tiempo de cada 2 ps a 5 ps 
-    sed "/\sOutput\s/,/\sThermostat\s/s/1000/2500/" $file > tmp.conf && rm $file && mv tmp.conf $file  
-    sed "s/.*dedfreq\s1/&\nstepspercycle 10/"
-  
+    sed "/\sOutput\s/,/\sThermostat\s/s/1000/2500/" $file >& tmp.conf && rm $file && mv tmp.conf $file  
+    sed "s/.*dedfreq\s1/&\nstepspercycle 10/" $file >& tmp.conf && rm $file && mv tmp.conf $file  
 done 
 
 ## Move the files to folder create 
@@ -58,7 +58,9 @@ cd ..
 
 rm -r setup 
 rm -r run 
+sleep 4 
 
+echo "Completed" 
 
 ## agregar la variable replica 
  #sed "/\sOutput\s/,/\sThermostat\s/s/\sMinimization/&_\$replica/" $file > tmp.conf && rm $file && mv tmp.conf $file 
